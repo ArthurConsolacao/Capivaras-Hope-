@@ -1,0 +1,31 @@
+version: '2'
+services:
+  db:
+    image: postgres
+    environment:
+      POSTGRES_USER: capivara
+      POSTGRES_PASSWORD: capivaras123
+      POSTGRES_DB: dbcapivaras
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+
+  backend:
+    build: ./backend
+    container_name: backend
+    restart: always
+    ports:
+      - "3000:3000"
+    environment:
+      DATABASE_URL: postgres://capivara:capivaras123@db:5432/dbcapivaras
+    depends_on:
+      - db
+    entrypoint: ["/usr/local/bin/wait-for-it.sh", "db:5432", "--", "npm", "run", "dev"]
+
+  frontend:
+    build: ./frontend/vuejs
+    container_name: frontend
+    restart: always
+    ports:
+      - "8080:80"
